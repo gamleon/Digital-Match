@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Match – ABB Workshop</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=ABBvoice:wght@400;700&family=Inter:wght@300;400;600;700;800&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Inter',sans-serif;background:#0f0f1a;color:#fff;min-height:100vh;overflow-x:hidden;}
+
+  /* HEADER */
+  .header{background:linear-gradient(135deg,#FF000F 0%,#cc0009 60%,#1a0003 100%);padding:28px 40px 22px;display:flex;align-items:center;gap:20px;box-shadow:0 4px 30px rgba(255,0,15,0.4);}
+  .abb-logo{font-size:2.2rem;font-weight:900;letter-spacing:2px;color:#fff;}
+  .header-text h1{font-size:1.6rem;font-weight:800;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.3);}
+  .header-text p{font-size:0.9rem;color:rgba(255,255,255,0.85);margin-top:4px;}
+  .badge{background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);padding:6px 16px;border-radius:20px;font-size:0.8rem;font-weight:600;margin-left:auto;white-space:nowrap;}
+
+  /* SCOREBOARD */
+  .score-bar{background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.08);padding:12px 40px;display:flex;gap:20px;overflow-x:auto;}
+  .team-score{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:8px 18px;display:flex;flex-direction:column;align-items:center;min-width:100px;transition:.3s;}
+  .team-score.leader{border-color:#FFD700;background:rgba(255,215,0,0.1);}
+  .team-score .tname{font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;}
+  .team-score .tval{font-size:1.5rem;font-weight:800;color:#fff;}
+  .team-score.leader .tval{color:#FFD700;}
+
+  /* MAIN */
+  .main{padding:30px 40px;}
+  .instruction{background:linear-gradient(135deg,rgba(255,0,15,0.1),rgba(103,100,246,0.1));border:1px solid rgba(255,0,15,0.3);border-radius:16px;padding:18px 24px;margin-bottom:28px;font-size:0.92rem;color:rgba(255,255,255,0.85);line-height:1.6;}
+  .instruction strong{color:#FF000F;}
+
+  /* CARDS GRID */
+  .phase-label{font-size:1rem;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:2px;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+  .phase-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.1);}
+  .columns{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:36px;}
+
+  .col-header{text-align:center;padding:10px;border-radius:10px;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+  .col-dor .col-header{background:rgba(255,100,0,0.25);color:#ff9040;border:1px solid rgba(255,100,0,0.3);}
+  .col-dado .col-header{background:rgba(103,100,246,0.25);color:#93a1ff;border:1px solid rgba(103,100,246,0.3);}
+  .col-solucao .col-header{background:rgba(255,0,15,0.25);color:#ff6070;border:1px solid rgba(255,0,15,0.3);}
+  .col-valor .col-header{background:rgba(0,200,100,0.2);color:#40e080;border:1px solid rgba(0,200,100,0.25);}
+
+  .card{background:rgba(255,255,255,0.05);border:2px solid rgba(255,255,255,0.1);border-radius:14px;padding:14px;font-size:0.83rem;line-height:1.5;cursor:pointer;transition:.25s;user-select:none;position:relative;}
+  .card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.09);}
+  .card.selected{border-color:#FF000F;background:rgba(255,0,15,0.15);transform:translateY(-3px);}
+  .card.matched{border-color:#40e080;background:rgba(0,200,100,0.12);cursor:default;opacity:.75;}
+  .card.matched::after{content:'✓';position:absolute;top:8px;right:10px;color:#40e080;font-weight:800;}
+  .card.wrong{border-color:#ff4444;background:rgba(255,0,0,0.15);animation:shake .4s;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);};}
+
+  .col-dor .card.selected{border-color:#ff9040;}
+  .col-dado .card.selected{border-color:#93a1ff;}
+  .col-valor .card.selected{border-color:#40e080;}
+
+  /* MATCH RESULT */
+  .result-area{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:20px;margin-top:10px;}
+  .result-area h3{font-size:1rem;font-weight:700;margin-bottom:14px;color:rgba(255,255,255,0.7);}
+  .match-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px;align-items:center;}
+  .match-cell{background:rgba(255,255,255,0.06);border-radius:10px;padding:10px;font-size:0.78rem;text-align:center;}
+  .arrow{font-size:1.2rem;text-align:center;color:rgba(255,255,255,0.3);}
+
+  /* BUTTONS */
+  .btn-row{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;}
+  .btn{padding:12px 28px;border-radius:10px;font-size:0.9rem;font-weight:700;border:none;cursor:pointer;transition:.2s;letter-spacing:.5px;}
+  .btn-red{background:#FF000F;color:#fff;}
+  .btn-red:hover{background:#cc0009;transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,0,15,0.4);}
+  .btn-ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.2);}
+  .btn-ghost:hover{background:rgba(255,255,255,0.07);}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:.3s;}
+  .modal-overlay.show{opacity:1;pointer-events:all;}
+  .modal{background:#1a1a2e;border:1px solid rgba(255,0,15,0.3);border-radius:20px;padding:36px;max-width:480px;width:90%;text-align:center;transform:scale(.9);transition:.3s;}
+  .modal-overlay.show .modal{transform:scale(1);}
+  .modal .icon{font-size:3rem;margin-bottom:12px;}
+  .modal h2{font-size:1.4rem;font-weight:800;margin-bottom:10px;}
+  .modal p{color:rgba(255,255,255,0.7);font-size:0.9rem;line-height:1.6;margin-bottom:20px;}
+  .progress-bar{background:rgba(255,255,255,0.1);border-radius:8px;height:8px;overflow:hidden;margin-bottom:6px;}
+  .progress-fill{background:linear-gradient(90deg,#FF000F,#6764f6);height:100%;border-radius:8px;transition:.5s;}
+
+  /* TIMER */
+  .timer-widget{position:fixed;bottom:28px;right:28px;background:#1a1a2e;border:2px solid rgba(255,0,15,0.4);border-radius:16px;padding:14px 20px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.4);z-index:50;}
+  .timer-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.5);margin-bottom:4px;}
+  .timer-value{font-size:2rem;font-weight:800;color:#FF000F;font-variant-numeric:tabular-nums;}
+  .timer-value.warning{color:#FFD700;animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;};}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="abb-logo">ABB</div>
+  <div class="header-text">
+    <h1>🔗 Digital Match – Associação de Soluções</h1>
+    <p>Workshop Digital AUPI Brasil • 20/08/2026 • Hotel Panamby</p>
+  </div>
+  <div class="badge">Dinâmica 1 · 10:50–12:15</div>
+</div>
+
+<!-- SCOREBOARD -->
+<div class="score-bar" id="scoreBoard">
+  <div class="team-score" id="t1"><span class="tname">Time 1</span><span class="tval" id="s1">0</span></div>
+  <div class="team-score" id="t2"><span class="tname">Time 2</span><span class="tval" id="s2">0</span></div>
+  <div class="team-score" id="t3"><span class="tname">Time 3</span><span class="tval" id="s3">0</span></div>
+  <div class="team-score" id="t4"><span class="tname">Time 4</span><span class="tval" id="s4">0</span></div>
+  <div class="team-score" id="t5"><span class="tname">Time 5</span><span class="tval" id="s5">0</span></div>
+  <div class="team-score" id="t6"><span class="tname">Time 6</span><span class="tval" id="s6">0</span></div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+    <button class="btn btn-ghost" style="padding:6px 14px;font-size:.78rem;" onclick="switchTeam(-1)">◀</button>
+    <span id="currentTeamLabel" style="font-size:.85rem;font-weight:700;color:#FF000F;">Time 1 Ativo</span>
+    <button class="btn btn-ghost" style="padding:6px 14px;font-size:.78rem;" onclick="switchTeam(1)">▶</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="instruction">
+    <strong>Como jogar:</strong> Cada time seleciona <strong>1 card de cada coluna</strong> que formem um conjunto coerente 
+    (Dor do Cliente → Dado Necessário → Solução ABB → Valor Gerado). Clique nos cards na sequência e depois em <strong>"Confirmar Associação"</strong>.
+    Acerto = <strong>+10 pontos</strong> · Erro = <strong>-2 pontos</strong>. Tempo total: <strong>35 minutos</strong>.
+  </div>
+
+  <!-- ROUND PROGRESS -->
+  <div style="margin-bottom:20px;">
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:.8rem;color:rgba(255,255,255,.5);">
+      <span>Progresso das Associações</span><span id="matchCount">0 / 6 completas</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="matchProgress" style="width:0%"></div></div>
+  </div>
+
+  <!-- COLUMNS -->
+  <div class="phase-label">Conecte os 4 elementos de cada linha</div>
+  <div class="columns">
+    <!-- COL DOR -->
+    <div class="col-dor">
+      <div class="col-header">😣 Dor do Cliente</div>
+      <div class="card" onclick="selectCard(this,'dor',0)" data-id="0">Consumo de energia excessivo sem visibilidade de onde ocorrem os desperdícios</div>
+      <div class="card" onclick="selectCard(this,'dor',1)" data-id="1">Equipamentos críticos param sem aviso, gerando alto custo de manutenção corretiva</div>
+      <div class="card" onclick="selectCard(this,'dor',2)" data-id="2">Processo industrial oscila muito, causando perda de qualidade e matéria-prima</div>
+      <div class="card" onclick="selectCard(this,'dor',3)" data-id="3">Dificuldade em rastrear a produção e garantir conformidade com padrões da planta</div>
+      <div class="card" onclick="selectCard(this,'dor',4)" data-id="4">Inspeção manual de produtos é lenta, cara e com alto índice de falhas humanas</div>
+      <div class="card" onclick="selectCard(this,'dor',5)" data-id="5">Dados de processo dispersos em silos, sem análise integrada e preditiva</div>
+    </div>
+    <!-- COL DADO -->
+    <div class="col-dado">
+      <div class="col-header">📊 Dado Necessário</div>
+      <div class="card" onclick="selectCard(this,'dado',3)" data-id="3">Dados de consumo em tempo real por centro de custo, máquina e turno</div>
+      <div class="card" onclick="selectCard(this,'dado',1)" data-id="1">Vibração, temperatura e corrente elétrica dos equipamentos em tempo real</div>
+      <div class="card" onclick="selectCard(this,'dado',0)" data-id="0">Variáveis de processo: temperatura, pressão, fluxo e composição química</div>
+      <div class="card" onclick="selectCard(this,'dado',2)" data-id="2">Ordens de produção, receitas, parâmetros de processo e resultados de qualidade</div>
+      <div class="card" onclick="selectCard(this,'dado',4)" data-id="4">Imagens de alta resolução capturadas em linha de produção com IA embarcada</div>
+      <div class="card" onclick="selectCard(this,'dado',5)" data-id="5">Tags de processo de múltiplas fontes: SCADA, DCS, PLCs integrados via IoT</div>
+    </div>
+    <!-- COL SOLUCAO -->
+    <div class="col-solucao">
+      <div class="col-header">⚙️ Solução ABB</div>
+      <div class="card" onclick="selectCard(this,'solucao',2)" data-id="2">APC – Advanced Process Control</div>
+      <div class="card" onclick="selectCard(this,'solucao',1)" data-id="1">AssetVista – Gestão de Ativos</div>
+      <div class="card" onclick="selectCard(this,'solucao',4)" data-id="4">Camera Connect – Video Analytics</div>
+      <div class="card" onclick="selectCard(this,'solucao',0)" data-id="0">EMS – Energy Management System</div>
+      <div class="card" onclick="selectCard(this,'solucao',3)" data-id="3">KM/MES – Knowledge Manager + MES</div>
+      <div class="card" onclick="selectCard(this,'solucao',5)" data-id="5">Genix – Industrial IoT & Analytics</div>
+    </div>
+    <!-- COL VALOR -->
+    <div class="col-valor">
+      <div class="col-header">💰 Valor Gerado</div>
+      <div class="card" onclick="selectCard(this,'valor',2)" data-id="2">Redução de 8–15% nas variações de processo, aumento de qualidade e throughput</div>
+      <div class="card" onclick="selectCard(this,'valor',1)" data-id="1">Redução de 30–40% em falhas não planejadas e extensão da vida útil dos ativos</div>
+      <div class="card" onclick="selectCard(this,'valor',4)" data-id="4">Detecção de defeitos 24/7 com precisão acima de 95%, redução de retrabalho</div>
+      <div class="card" onclick="selectCard(this,'valor',0)" data-id="0">Redução de 10–20% no consumo de energia com ROI em 12–18 meses</div>
+      <div class="card" onclick="selectCard(this,'valor',3)" data-id="3">Rastreabilidade total da produção, conformidade regulatória e OEE melhorado</div>
+      <div class="card" onclick="selectCard(this,'valor',5)" data-id="5">Insights preditivos centralizados, decisões baseadas em dados em tempo real</div>
+    </div>
+  </div>
+
+  <!-- RESULT AREA -->
+  <div class="result-area" id="resultArea">
+    <h3>📋 Associações Confirmadas</h3>
+    <div id="matchRows"><p style="color:rgba(255,255,255,.3);font-size:.85rem;">Nenhuma associação confirmada ainda...</p></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-red" onclick="confirmMatch()">✅ Confirmar Associação</button>
+    <button class="btn btn-ghost" onclick="clearSelection()">🔄 Limpar Seleção</button>
+    <button class="btn btn-ghost" onclick="resetGame()">♻️ Reiniciar Jogo</button>
+    <button class="btn btn-ghost" onclick="toggleTimer()">⏱️ Iniciar/Pausar Timer</button>
+  </div>
+</div>
+
+<!-- TIMER -->
+<div class="timer-widget">
+  <div class="timer-label">Tempo Restante</div>
+  <div class="timer-value" id="timerDisplay">35:00</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="icon" id="modalIcon">🎉</div>
+    <h2 id="modalTitle">Excelente!</h2>
+    <p id="modalMsg"></p>
+    <div class="progress-bar"><div class="progress-fill" id="modalProg" style="width:0%"></div></div>
+    <p id="modalSub" style="font-size:.78rem;color:rgba(255,255,255,.4);margin-top:6px;margin-bottom:20px;"></p>
+    <button class="btn btn-red" onclick="closeModal()">Continuar →</button>
+  </div>
+</div>
+
+<script>
+// Correct mappings: index = case number
+// dor[i] matches dado[i] matches solucao[i] matches valor[i]
+// But cards are shuffled in HTML, so we track by data-id
+
+const scores = [0,0,0,0,0,0];
+let currentTeam = 0;
+let selection = {dor:null,dado:null,solucao:null,valor:null};
+let selectedEls = {dor:null,dado:null,solucao:null,valor:null};
+let matchedCount = 0;
+
+// Timer
+let timerSeconds = 35*60;
+let timerRunning = false;
+let timerInterval = null;
+
+function updateTimerDisplay(){
+  const m = Math.floor(timerSeconds/60);
+  const s = timerSeconds % 60;
+  const el = document.getElementById('timerDisplay');
+  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  el.className = 'timer-value' + (timerSeconds <= 300 ? ' warning' : '');
+}
+
+function toggleTimer(){
+  if(timerRunning){
+    clearInterval(timerInterval);
+    timerRunning = false;
+  } else {
+    timerInterval = setInterval(()=>{
+      if(timerSeconds > 0){ timerSeconds--; updateTimerDisplay(); }
+      else { clearInterval(timerInterval); timerRunning=false; showModal('⏰','Tempo Esgotado!','O tempo para esta rodada acabou. O facilitador irá revelar as respostas corretas.',''); }
+    },1000);
+    timerRunning = true;
+  }
+}
+
+function switchTeam(dir){
+  currentTeam = (currentTeam + dir + 6) % 6;
+  document.getElementById('currentTeamLabel').textContent = `Time ${currentTeam+1} Ativo`;
+  clearSelection();
+  updateLeader();
+}
+
+function updateLeader(){
+  const max = Math.max(...scores);
+  for(let i=0;i<6;i++){
+    const el = document.getElementById(`t${i+1}`);
+    el.className = 'team-score' + (scores[i]===max && max>0 ? ' leader':'');
+    document.getElementById(`s${i+1}`).textContent = scores[i];
+  }
+}
+
+function selectCard(el, col, id){
+  if(el.classList.contains('matched')) return;
+  // Deselect previous in same column
+  if(selectedEls[col]){
+    selectedEls[col].classList.remove('selected');
+  }
+  if(selectedEls[col] === el){
+    selectedEls[col] = null;
+    selection[col] = null;
+    return;
+  }
+  el.classList.add('selected');
+  selectedEls[col] = el;
+  selection[col] = parseInt(el.dataset.id);
+}
+
+function confirmMatch(){
+  const {dor,dado,solucao,valor} = selection;
+  if(dor===null||dado===null||solucao===null||valor===null){
+    showModal('⚠️','Seleção Incompleta','Selecione um card de <strong>cada coluna</strong> antes de confirmar!','');
+    return;
+  }
+  if(dor===dado && dado===solucao && solucao===valor){
+    // CORRECT
+    scores[currentTeam] += 10;
+    ['dor','dado','solucao','valor'].forEach(c=>{
+      selectedEls[c].classList.remove('selected');
+      selectedEls[c].classList.add('matched');
+    });
+    matchedCount++;
+    addMatchRow(selectedEls.dor.textContent, selectedEls.dado.textContent, selectedEls.solucao.textContent, selectedEls.valor.textContent, true);
+    const pct = (matchedCount/6)*100;
+    document.getElementById('matchProgress').style.width = pct+'%';
+    document.getElementById('matchCount').textContent = `${matchedCount} / 6 completas`;
+    clearSelection(false);
+    updateLeader();
+    if(matchedCount===6){
+      showModal('🏆','Todas Associadas!',`Parabéns! Todas as 6 soluções foram corretamente associadas. Time ${currentTeam+1} acumulou ${scores[currentTeam]} pontos!`,`Pontuação: ${scores[currentTeam]}`);
+    } else {
+      showModal('✅','Correto! +10 pontos',`Ótima associação! A solução <strong>${selectedEls.solucao.textContent}</strong> resolve exatamente essa dor do cliente.`,`Time ${currentTeam+1} → ${scores[currentTeam]} pontos`);
+    }
+  } else {
+    // WRONG
+    scores[currentTeam] = Math.max(0, scores[currentTeam]-2);
+    ['dor','dado','solucao','valor'].forEach(c=>{
+      if(selectedEls[c]){ selectedEls[c].classList.add('wrong'); setTimeout(()=>selectedEls[c].classList.remove('wrong'),500); }
+    });
+    updateLeader();
+    showModal('❌','Associação Incorreta! -2 pontos','Os elementos selecionados não formam um conjunto coerente. Revise as soluções e tente novamente!',`Time ${currentTeam+1} → ${scores[currentTeam]} pontos`);
+    clearSelection(false);
+  }
+}
+
+function addMatchRow(dor,dado,sol,val,correct){
+  const container = document.getElementById('matchRows');
+  if(container.querySelector('p')) container.innerHTML='';
+  const row = document.createElement('div');
+  row.className = 'match-row';
+  row.innerHTML = `
+    <div class="match-cell" style="border:1px solid rgba(255,144,64,.3);font-size:.75rem">${dor}</div>
+    <div class="match-cell" style="border:1px solid rgba(147,161,255,.3);font-size:.75rem">${dado}</div>
+    <div class="match-cell" style="border:1px solid rgba(255,0,15,.3);font-size:.75rem">${sol}</div>
+    <div class="match-cell" style="border:1px solid rgba(64,224,128,.3);font-size:.75rem">${val}</div>
+  `;
+  container.appendChild(row);
+}
+
+function clearSelection(resetEls=true){
+  ['dor','dado','solucao','valor'].forEach(c=>{
+    if(selectedEls[c]&&!selectedEls[c].classList.contains('matched')) selectedEls[c].classList.remove('selected');
+    if(resetEls){ selectedEls[c]=null; selection[c]=null; }
+  });
+  if(resetEls){selection={dor:null,dado:null,solucao:null,valor:null};selectedEls={dor:null,dado:null,solucao:null,valor:null};}
+}
+
+function resetGame(){
+  document.querySelectorAll('.card').forEach(c=>{c.className='card';});
+  scores.fill(0); matchedCount=0; timerSeconds=35*60;
+  clearInterval(timerInterval); timerRunning=false;
+  updateTimerDisplay(); updateLeader();
+  document.getElementById('matchRows').innerHTML='<p style="color:rgba(255,255,255,.3);font-size:.85rem;">Nenhuma associação confirmada ainda...</p>';
+  document.getElementById('matchProgress').style.width='0%';
+  document.getElementById('matchCount').textContent='0 / 6 completas';
+  selection={dor:null,dado:null,solucao:null,valor:null};
+  selectedEls={dor:null,dado:null,solucao:null,valor:null};
+}
+
+function showModal(icon,title,msg,sub){
+  document.getElementById('modalIcon').textContent=icon;
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalMsg').innerHTML=msg;
+  document.getElementById('modalSub').textContent=sub;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('show'); }
+</script>
+</body>
+</html>
